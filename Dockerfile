@@ -5,7 +5,6 @@ COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml 
 RUN pnpm install --frozen-lockfile
 COPY frontend/app ./app
 COPY frontend/components ./components
-COPY frontend/public ./public
 COPY frontend/next.config.ts frontend/postcss.config.mjs frontend/tsconfig.json frontend/eslint.config.mjs  ./
 RUN pnpm build  
 
