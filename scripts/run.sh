@@ -2,7 +2,6 @@
 
 set -uo pipefail
 
-REPO="docker2.petarmc.com"
 IMAGE="petarmc/tools"
 TAG="${1:-dev}"
 
@@ -21,4 +20,4 @@ docker run -d \
   -e GITRSS_DEEP_REFRESH_DAYS=10 \
   -e GITRSS_ADMIN_PASSWORD=change-me \
   --restart unless-stopped \
-  $REPO/$IMAGE:$TAG 
+  $IMAGE:$TAG 
