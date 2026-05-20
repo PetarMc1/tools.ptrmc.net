@@ -1,0 +1,24 @@
+From 48099cca423db2cf5939a4b0de9cd64e00d11648 Mon Sep 17 00:00:00 2001
+From: PetarMc1 <160483025+PetarMc1@users.noreply.github.com>
+Date: Tue, 19 May 2026 17:22:46 +0000
+Subject: [PATCH 2/3] change frontend base
+
+---
+ frontend/vite.config.ts | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/frontend/vite.config.ts b/frontend/vite.config.ts
+index 00665ea..2cd2244 100644
+--- a/frontend/vite.config.ts
++++ b/frontend/vite.config.ts
+@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
+ 
+ 
+ export default defineConfig({
++  base: "/openapi-merger/",
+   plugins: [react()],
+   resolve: {
+     alias: {
+-- 
+2.43.0
+

@@ -1,0 +1,24 @@
+From 2f8a9ca922901bacd7fa6a9f5ac000fdc129daae Mon Sep 17 00:00:00 2001
+From: PetarMc1 <160483025+PetarMc1@users.noreply.github.com>
+Date: Mon, 18 May 2026 19:24:08 +0000
+Subject: [PATCH 2/3] chnage frontend base
+
+---
+ frontend/vite.config.ts | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/frontend/vite.config.ts b/frontend/vite.config.ts
+index 399cfaf..507ae20 100644
+--- a/frontend/vite.config.ts
++++ b/frontend/vite.config.ts
+@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
+ import react from '@vitejs/plugin-react';
+ 
+ export default defineConfig({
++  base: "/gitrss/",
+   plugins: [react()],
+   server: {
+     port: 3000,
+-- 
+2.43.0
+

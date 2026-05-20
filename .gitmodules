@@ -1,0 +1,9 @@
+[submodule "package-json-analyzer"]
+	path = package-json-analyzer
+	url = https://github.com/PetarMc1/package-json-analyzer
+[submodule "openapi-merger"]
+	path = openapi-merger
+	url = https://github.com/PetarMc1/openapi-merger
+[submodule "gitrss"]
+	path = gitrss
+	url = https://github.com/PetarMc1/GitRSS

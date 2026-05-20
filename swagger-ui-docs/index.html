@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Petar_mc's Tools | API Docs</title>
+    <link rel="canonical" href="https://tools.ptrmc.net/api-docs" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/swagger-ui-dist/swagger-ui.css"
+    />
+  </head>
+  <body>
+    <div id="swagger-ui"></div>
+
+    <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
+    <script>
+      SwaggerUIBundle({
+        url: "./openapi.json",
+        dom_id: "#swagger-ui",
+      });
+    </script>
+  </body>
+</html>

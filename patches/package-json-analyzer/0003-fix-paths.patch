@@ -1,0 +1,113 @@
+From bf285abdc17bc82476f0a877e1833e4589a3d603 Mon Sep 17 00:00:00 2001
+From: PetarMc1 <160483025+PetarMc1@users.noreply.github.com>
+Date: Tue, 19 May 2026 18:11:24 +0000
+Subject: [PATCH 3/3] fix paths
+
+---
+ frontend/src/App.tsx | 43 +++++++++++++++++++++++++++++++------------
+ 1 file changed, 31 insertions(+), 12 deletions(-)
+
+diff --git a/frontend/src/App.tsx b/frontend/src/App.tsx
+index 42c0bb6..4398b69 100644
+--- a/frontend/src/App.tsx
++++ b/frontend/src/App.tsx
+@@ -5,7 +5,7 @@ import { useAnalyze } from './hooks/useAnalyze';
+ import { apiUrl } from './api';
+ import { Helmet } from 'react-helmet-async';
+ 
+-type Route = '/' | '/about';
++type Route = 'main' | 'about';
+ type HealthStatus = 'checking' | 'ok' | 'unreachable';
+ 
+ const statusLabel: Record<HealthStatus, string> = {
+@@ -14,8 +14,28 @@ const statusLabel: Record<HealthStatus, string> = {
+   unreachable: 'Backend: offline',
+ };
+ 
++const VITE_BASE = (import.meta as any)?.env?.BASE_URL ?? "/";
++const basePrefix = VITE_BASE.endsWith("/") ? VITE_BASE.slice(0, -1) : VITE_BASE;
++
++
++function prefixed(href: string): string {
++  if (!href.startsWith("/")) {
++    href = "/" + href;
++  }
++  return `${basePrefix}${href}`;
++}
++
++function buildPathFor(route: Route): string {
++  if (route === "about") {
++    return `${basePrefix}/about`;
++  }
++  return prefixed("/");
++}
++
++
++
+ export default function App() {
+-  const [route, setRoute] = useState<Route>('/');
++  const [route, setRoute] = useState<Route>('main');
+   const [healthStatus, setHealthStatus] = useState<HealthStatus>('checking');
+   const {
+     result,
+@@ -53,7 +73,6 @@ export default function App() {
+   }, []);
+ 
+   const currentYear = useMemo(() => new Date().getFullYear(), []);
+-
+   return (
+     <>
+     <Helmet>
+@@ -82,21 +101,21 @@ export default function App() {
+         <p className="app-subtitle">Inspect scripts, dependencies, and package structure.</p>
+         <nav className="top-nav" aria-label="Primary navigation">
+           <a
+-            className={`top-nav_link${route === '/' ? ' top-nav_link-active' : ''}`}
+-            href="/"
++            className={`top-nav_link${route === 'main' ? ' top-nav_link-active' : ''}`}
++            href={`${basePrefix}`}
+             onClick={(e) => {
+               e.preventDefault();
+-              setRoute('/');
++              setRoute('main');
+             }}
+           >
+             Analyzer
+           </a>
+           <a
+-            className={`top-nav_link${route === '/about' ? ' top-nav_link-active' : ''}`}
+-            href="/about"
++            className={`top-nav_link${route === `about` ? ' top-nav_link-active' : ''}`}
++            href={`${basePrefix}/about`}
+             onClick={(e) => {
+               e.preventDefault();
+-              setRoute('/about');
++              setRoute('about');
+             }}
+           >
+             About
+@@ -117,7 +136,7 @@ export default function App() {
+       </header>
+ 
+       <main className="app-main">
+-        {route === '/about' ? (
++        {route === "about" ? (
+           <>
+           <Helmet>
+             <title>Package.json Analyzer | About</title>
+@@ -172,10 +191,10 @@ export default function App() {
+           <a href="https://github.com/PetarMc1/package-json-analyzer/issues" target="_blank" rel="noreferrer">Report Issues</a>
+           <span aria-hidden="true">•</span>
+           <a
+-            href="/about"
++            href={buildPathFor("about")}
+             onClick={(e) => {
+               e.preventDefault();
+-              setRoute('/about');
++              setRoute('about');
+             }}
+           >
+             About
+-- 
+2.43.0
+

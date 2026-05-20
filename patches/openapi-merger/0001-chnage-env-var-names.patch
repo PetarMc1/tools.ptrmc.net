@@ -1,0 +1,32 @@
+From a5dab6bdf525c61bc4aee0784eadc3a3ab511aae Mon Sep 17 00:00:00 2001
+From: PetarMc1 <160483025+PetarMc1@users.noreply.github.com>
+Date: Tue, 19 May 2026 17:21:38 +0000
+Subject: [PATCH 1/3] chnage env var names
+
+---
+ backend/src/index.ts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/backend/src/index.ts b/backend/src/index.ts
+index 89b97ac..18e50bf 100644
+--- a/backend/src/index.ts
++++ b/backend/src/index.ts
+@@ -8,13 +8,13 @@ import { mergeRoutes } from './routes/mergeRoutes.js';
+ dotenv.config()
+ 
+ const app = express();
+-const port = process.env.PORT ?? 3000;
++const port = process.env.OPENAPI_MERGER_PORT ?? 3000;
+ 
+ app.use(express.json({ limit: '5mb' }));
+ app.use(express.urlencoded({ extended: false }));
+ 
+ app.use((req, res, next) => {
+-  const origin = process.env.CORS_ORIGIN ?? '*';
++  const origin = process.env.OPENAPI_MERGER_CORS_ORIGIN ?? '*';
+   res.setHeader('Access-Control-Allow-Origin', origin);
+   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+   res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+-- 
+2.43.0
+

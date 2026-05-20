@@ -1,0 +1,24 @@
+From 875584222d09a1a31b612b4f5ed08caddc54db54 Mon Sep 17 00:00:00 2001
+From: PetarMc1 <160483025+PetarMc1@users.noreply.github.com>
+Date: Tue, 19 May 2026 17:47:37 +0000
+Subject: [PATCH 2/3] change frontend base
+
+---
+ frontend/vite.config.ts | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/frontend/vite.config.ts b/frontend/vite.config.ts
+index 681d7bd..931acbc 100644
+--- a/frontend/vite.config.ts
++++ b/frontend/vite.config.ts
+@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
+ import react from '@vitejs/plugin-react';
+ 
+ export default defineConfig({
++  base: "/package-json-analyzer",
+   plugins: [react()],
+   server: {
+     port: 5173,
+-- 
+2.43.0
+

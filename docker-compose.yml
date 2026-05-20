@@ -1,0 +1,13 @@
+services:
+  tools:
+    image: petarmc/tools.ptrmc.net:latest
+    container_name: tools
+    ports:
+      - "80:80"
+    environment:
+      - GITRSS_REDIS_URL=redis://redis:6379
+      # - GITRSS_GITHUB_TOKEN=
+      - GITRSS_DEEP_REFRESH_DAYS=10
+      - GITRSS_ADMIN_PASSWORD=change-me
+    restart: unless-stopped
+

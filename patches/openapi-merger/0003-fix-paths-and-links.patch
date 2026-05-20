@@ -1,0 +1,235 @@
+From 5284d743222048d26e1bf1dcd68ab1bdcfa6047b Mon Sep 17 00:00:00 2001
+From: PetarMc1 <160483025+PetarMc1@users.noreply.github.com>
+Date: Tue, 19 May 2026 20:47:39 +0000
+Subject: [PATCH 3/3] fix paths and links
+
+---
+ frontend/src/App.tsx                  | 70 +++------------------------
+ frontend/src/components/FooterNav.tsx | 16 ++----
+ frontend/src/components/HeaderNav.tsx | 22 +++------
+ frontend/src/constants/app.ts         |  4 +-
+ frontend/src/types/app.ts             |  2 +-
+ 5 files changed, 21 insertions(+), 93 deletions(-)
+
+diff --git a/frontend/src/App.tsx b/frontend/src/App.tsx
+index de77d29..27905e4 100644
+--- a/frontend/src/App.tsx
++++ b/frontend/src/App.tsx
+@@ -1,6 +1,6 @@
+ import { useCallback, useEffect, useMemo, useState } from 'react';
+ 
+-import { APP_ROUTES, MERGE_PROGRESS_STEPS, STATUS_LABEL } from './constants/app';
++import { MERGE_PROGRESS_STEPS, STATUS_LABEL } from './constants/app';
+ import { FooterNav } from './components/FooterNav';
+ import { HeaderNav } from './components/HeaderNav';
+ import { MergeSourcesPanel } from './components/MergeSourcesPanel';
+@@ -27,32 +27,15 @@ function createSourceSlot(): MergeSourceSlot {
+   };
+ }
+ 
+-const faqItems = [
+-  {
+-    id: 'input-modes',
+-    question: 'How can I add specs?',
+-    answer: 'Use file upload, raw JSON paste, GitHub raw links, or direct URLs in a single merge request.',
+-  },
+-  {
+-    id: 'conflicts',
+-    question: 'How are conflicts handled?',
+-    answer: 'Conflicts are reported as warnings, including duplicate paths, schema collisions, and incompatible operations.',
+-  },
+-  {
+-    id: 'schema-collision',
+-    question: 'What happens with schema name collisions?',
+-    answer: 'Colliding schemas are auto-renamed with a document suffix and all matching $ref values are updated.',
+-  },
+-  {
+-    id: 'storage',
+-    question: 'Are my specs stored on the server?',
+-    answer: 'No persistence is applied by default. Documents are processed in-memory for merge and returned in the response.',
+-  },
+-];
++const VITE_BASE = (import.meta as any)?.env?.BASE_URL ?? "/";
++const basePrefix = VITE_BASE.endsWith("/") ? VITE_BASE.slice(0, -1) : VITE_BASE;
+ 
+ 
+ function normalizeRoute(pathname: string): AppRoute {
+-  return APP_ROUTES.includes(pathname as AppRoute) ? (pathname as AppRoute) : '/';
++   if (basePrefix && pathname.startsWith(basePrefix)) {
++    return "main";
++  }
++  return "main";
+ }
+ 
+ function navigateTo(path: AppRoute): void {
+@@ -64,40 +47,6 @@ function navigateTo(path: AppRoute): void {
+   window.dispatchEvent(new PopStateEvent('popstate'));
+ }
+ 
+-function FaqPage() {
+-  return (
+-    <section className="card static-page" aria-labelledby="faq-title">
+-      <h2 id="faq-title" className="static-page_title">
+-        FAQ
+-      </h2>
+-      <div className="faq-list">
+-        {faqItems.map((item) => (
+-          <details key={item.id} className="faq-item">
+-            <summary>{item.question}</summary>
+-            <p>{item.answer}</p>
+-          </details>
+-        ))}
+-      </div>
+-    </section>
+-  );
+-}
+-
+-function TermsPage() {
+-  return (
+-    <section className="card static-page" aria-labelledby="terms-title">
+-      <h2 id="terms-title" className="static-page_title">
+-        Terms
+-      </h2>
+-      {/* <ol className="terms-list">
+-        {terms.map((line) => (
+-          <li key={line}>
+-            <p>{line}</p>
+-          </li>
+-        ))}
+-      </ol> */}
+-    </section>
+-  );
+-}
+ 
+ function HomePage({ backendStatus }: { backendStatus: 'checking' | 'ok' | 'degraded' | 'unreachable' }) {
+   const [sourceSlots, setSourceSlots] = useState<MergeSourceSlot[]>(() => [createSourceSlot(), createSourceSlot()]);
+@@ -422,10 +371,7 @@ export default function App() {
+         <HeaderNav route={route} onNavigate={navigateTo} />
+       </header>
+ 
+-      {route === '/' ? <HomePage backendStatus={backendStatus} /> : null}
+-      {route === '/faq' ? <FaqPage /> : null}
+-      {route === '/terms' ? <TermsPage /> : null}
+-
++      {route === "main" ? <HomePage backendStatus={backendStatus} /> : null}
+       <FooterNav onNavigate={navigateTo} />
+     </div>
+   );
+diff --git a/frontend/src/components/FooterNav.tsx b/frontend/src/components/FooterNav.tsx
+index 97f5e11..97c15ec 100644
+--- a/frontend/src/components/FooterNav.tsx
++++ b/frontend/src/components/FooterNav.tsx
+@@ -11,31 +11,23 @@ export function FooterNav({ onNavigate }: FooterNavProps) {
+     <footer className="app-footer">
+       <div className="app-footer_links">
+         <a
+-          href="/"
++          href="/openapi-merger"
+           onClick={(event) => {
+             event.preventDefault();
+-            onNavigate('/');
++            onNavigate('main');
+           }}
+         >
+           Home
+         </a>
+         <span aria-hidden="true">•</span>
+         <a
+-          href="/faq"
+-          onClick={(event) => {
+-            event.preventDefault();
+-            onNavigate('/faq');
+-          }}
++          href="/faq/openapi-merger"
+         >
+           FAQ
+         </a>
+         <span aria-hidden="true">•</span>
+         <a
+-          href="/terms"
+-          onClick={(event) => {
+-            event.preventDefault();
+-            onNavigate('/terms');
+-          }}
++          href="/terms/openapi-merger"
+         >
+           Terms
+         </a>
+diff --git a/frontend/src/components/HeaderNav.tsx b/frontend/src/components/HeaderNav.tsx
+index ce74742..3947131 100644
+--- a/frontend/src/components/HeaderNav.tsx
++++ b/frontend/src/components/HeaderNav.tsx
+@@ -9,32 +9,24 @@ export function HeaderNav({ route, onNavigate }: HeaderNavProps) {
+   return (
+     <nav className="top-nav" aria-label="Primary navigation">
+       <a
+-        className={`top-nav_link ${route === '/' ? 'top-nav_link-active' : ''}`}
+-        href="/"
++        className={`top-nav_link ${route === 'main' ? 'top-nav_link-active' : ''}`}
++        href="/openapi-merger"
+         onClick={(event) => {
+           event.preventDefault();
+-          onNavigate('/');
++          onNavigate('main');
+         }}
+       >
+         Home
+       </a>
+       <a
+-        className={`top-nav_link ${route === '/faq' ? 'top-nav_link-active' : ''}`}
+-        href="/faq"
+-        onClick={(event) => {
+-          event.preventDefault();
+-          onNavigate('/faq');
+-        }}
++        className={`top-nav_link`}
++        href="/faq/openapi-merger"
+       >
+         FAQ
+       </a>
+       <a
+-        className={`top-nav_link ${route === '/terms' ? 'top-nav_link-active' : ''}`}
+-        href="/terms"
+-        onClick={(event) => {
+-          event.preventDefault();
+-          onNavigate('/terms');
+-        }}
++        className={`top-nav_link`}
++        href="/terms/openapi-merger"
+       >
+         Terms
+       </a>
+diff --git a/frontend/src/constants/app.ts b/frontend/src/constants/app.ts
+index 1f814aa..6b0452e 100644
+--- a/frontend/src/constants/app.ts
++++ b/frontend/src/constants/app.ts
+@@ -1,4 +1,4 @@
+-import type { AppRoute, BackendStatus } from '../types/app';
++import type { BackendStatus } from '../types/app';
+ 
+ export const STATUS_LABEL: Record<BackendStatus, string> = {
+   checking: 'Backend: checking…',
+@@ -7,8 +7,6 @@ export const STATUS_LABEL: Record<BackendStatus, string> = {
+   unreachable: 'Backend: offline',
+ };
+ 
+-export const APP_ROUTES: readonly AppRoute[] = ['/', '/faq', '/terms'];
+-
+ export const TOAST_DURATION_MS = 6000;
+ 
+ export const MERGE_PROGRESS_STEPS: ReadonlyArray<{ delay: number; message: string }> = [
+diff --git a/frontend/src/types/app.ts b/frontend/src/types/app.ts
+index fec5711..907bd8f 100644
+--- a/frontend/src/types/app.ts
++++ b/frontend/src/types/app.ts
+@@ -1,6 +1,6 @@
+ import type { MergeResponse, MergeWarning, OpenApiDocument } from 'shared/schemas';
+ 
+-export type AppRoute = '/' | '/faq' | '/terms';
++export type AppRoute = 'main' | 'about';
+ 
+ export type BackendStatus = 'checking' | 'ok' | 'degraded' | 'unreachable';
+ 
+-- 
+2.43.0
+

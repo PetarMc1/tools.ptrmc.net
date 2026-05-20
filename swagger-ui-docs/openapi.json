@@ -1,0 +1,766 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Petar_mc's Tools API",
+    "version": "1.0.0",
+    "description": "API docs for the tools available at https://tools.ptrmc.net. This API is used by the frontend tools and can also be accessed directly for integration with other tools or for testing purposes."
+  },
+  "paths": {
+    "/openapi-merger/api/health": {
+      "get": {
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "service": {
+                      "type": "string",
+                      "example": "openapi-json-merger-backend"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "service"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/openapi-merger/api/validate": {
+      "post": {
+        "summary": "Validate one or more OpenAPI documents",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "specFiles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  },
+                  "rawSpecs": {
+                    "type": "string",
+                    "description": "JSON-encoded array of raw OpenAPI document strings"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Validation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "valid": {
+                      "type": "boolean"
+                    },
+                    "issues": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ValidationIssue"
+                      }
+                    },
+                    "stats": {
+                      "$ref": "#/components/schemas/ValidationStats"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - no documents or invalid input"
+          }
+        }
+      }
+    },
+    "/openapi-merger/api/merge": {
+      "post": {
+        "summary": "Merge multiple OpenAPI documents into a single OpenAPI document",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "specFiles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  },
+                  "rawSpecs": {
+                    "type": "string",
+                    "description": "JSON-encoded array of raw OpenAPI document strings"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Merged OpenAPI document and merge metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "merged": {
+                      "type": "object",
+                      "description": "Resulting OpenAPI document (OpenAPI 3.x)"
+                    },
+                    "warnings": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MergeWarning"
+                      }
+                    },
+                    "conflicts": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MergeConflict"
+                      }
+                    },
+                    "summary": {
+                      "$ref": "#/components/schemas/MergeStats"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - no documents or invalid input"
+          }
+        }
+      }
+    },
+    "/package-json-analyzer/api/health": {
+      "get": {
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Server is available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/package-json-analyzer/api/analyze": {
+      "post": {
+        "summary": "Analyze package.json content",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "content": {
+                        "type": "string",
+                        "description": "Raw package.json string"
+                      }
+                    },
+                    "required": [
+                      "content"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "description": "Raw package.json object"
+                  }
+                ]
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Analysis result"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "422": {
+            "description": "Invalid package.json payload"
+          }
+        }
+      }
+    },
+    "/package-json-analyzer/api/fetch-package-json": {
+      "post": {
+        "summary": "Fetch package.json from remote source",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "source": {
+                        "type": "string",
+                        "enum": [
+                          "github"
+                        ]
+                      },
+                      "repo": {
+                        "type": "string",
+                        "example": "facebook/react"
+                      },
+                      "ref": {
+                        "type": "string",
+                        "example": "main"
+                      },
+                      "path": {
+                        "type": "string",
+                        "example": "package.json"
+                      }
+                    },
+                    "required": [
+                      "source",
+                      "repo"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "source": {
+                        "type": "string",
+                        "enum": [
+                          "link"
+                        ]
+                      },
+                      "url": {
+                        "type": "string",
+                        "example": "https://raw.githubusercontent.com/user/repo/main/package.json"
+                      }
+                    },
+                    "required": [
+                      "source",
+                      "url"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Fetched package.json content"
+          },
+          "400": {
+            "description": "Invalid source payload"
+          },
+          "422": {
+            "description": "Fetch or parse failed"
+          }
+        }
+      }
+    },
+    "/gitrss/api/health": {
+      "get": {
+        "summary": "Health check",
+        "description": "Returns application health status and dependency states.",
+        "responses": {
+          "200": {
+            "description": "Health status response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "degraded",
+                      "enum": [
+                        "ok",
+                        "degraded",
+                        "down"
+                      ]
+                    },
+                    "services": {
+                      "type": "object",
+                      "properties": {
+                        "redis": {
+                          "type": "string",
+                          "example": "down",
+                          "enum": [
+                            "up",
+                            "down",
+                            "unconfigured"
+                          ]
+                        },
+                        "github": {
+                          "type": "string",
+                          "example": "unconfigured",
+                          "enum": [
+                            "up",
+                            "down",
+                            "unconfigured"
+                          ]
+                        }
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-05-20T19:33:19.690Z"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "degraded",
+                  "services": {
+                    "redis": "down",
+                    "github": "unconfigured"
+                  },
+                  "timestamp": "2026-05-20T19:33:19.690Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gitrss/api/rss/commits": {
+      "get": {
+        "summary": "Get commit RSS feed",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/repo"
+          },
+          {
+            "$ref": "#/components/parameters/branches"
+          },
+          {
+            "$ref": "#/components/parameters/branchesArray"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RSS feed",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/gitrss/api/rss/issues": {
+      "get": {
+        "summary": "Get issues RSS feed",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/repo"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RSS feed",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/gitrss/api/rss/pulls": {
+      "get": {
+        "summary": "Get pull requests RSS feed",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/repo"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RSS feed",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/gitrss/api/rss/releases": {
+      "get": {
+        "summary": "Get releases RSS feed",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/repo"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RSS feed",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/gitrss/api/rss/all": {
+      "get": {
+        "summary": "Get combined RSS feed",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/repo"
+          },
+          {
+            "$ref": "#/components/parameters/includeCommits"
+          },
+          {
+            "$ref": "#/components/parameters/includeIssues"
+          },
+          {
+            "$ref": "#/components/parameters/includePulls"
+          },
+          {
+            "$ref": "#/components/parameters/includeReleases"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RSS feed",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ValidationIssue": {
+        "type": "object",
+        "properties": {
+          "documentIndex": {
+            "type": "integer",
+            "example": 0
+          },
+          "source": {
+            "type": "string",
+            "example": "file:users.json"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "nullable": true
+          }
+        }
+      },
+      "ValidationStats": {
+        "type": "object",
+        "properties": {
+          "sourceCount": {
+            "type": "integer"
+          },
+          "validCount": {
+            "type": "integer"
+          },
+          "invalidCount": {
+            "type": "integer"
+          }
+        }
+      },
+      "MergeWarning": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "nullable": true
+          },
+          "schemaName": {
+            "type": "string",
+            "nullable": true
+          },
+          "documentIndex": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "MergeConflict": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "nullable": true
+          },
+          "method": {
+            "type": "string",
+            "nullable": true
+          },
+          "documentIndex": {
+            "type": "integer",
+            "nullable": true
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "nullable": true
+          }
+        }
+      },
+      "MergeStats": {
+        "type": "object",
+        "properties": {
+          "sourceCount": {
+            "type": "integer"
+          },
+          "pathCount": {
+            "type": "integer"
+          },
+          "operationCount": {
+            "type": "integer"
+          },
+          "schemaCount": {
+            "type": "integer"
+          },
+          "componentCount": {
+            "type": "integer"
+          },
+          "warningCount": {
+            "type": "integer"
+          },
+          "conflictCount": {
+            "type": "integer"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      }
+    },
+    "securitySchemes": {},
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request parameters",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "GitHub API rate limit exceeded",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "repo": {
+        "name": "repo",
+        "in": "query",
+        "required": true,
+        "description": "Repository in owner/repo format",
+        "schema": {
+          "type": "string",
+          "example": "octocat/Hello-World"
+        }
+      },
+      "branches": {
+        "name": "branches",
+        "in": "query",
+        "required": false,
+        "description": "Comma-separated branch names",
+        "schema": {
+          "type": "string",
+          "example": "main,develop"
+        }
+      },
+      "branchesArray": {
+        "name": "branches[]",
+        "in": "query",
+        "required": false,
+        "style": "form",
+        "explode": true,
+        "description": "Array-style branch names (repeatable)",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "includeCommits": {
+        "name": "commits",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "includeIssues": {
+        "name": "issues",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "includePulls": {
+        "name": "pulls",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "includeReleases": {
+        "name": "releases",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      }
+    },
+    "examples": {},
+    "requestBodies": {},
+    "headers": {},
+    "links": {},
+    "callbacks": {}
+  },
+  "servers": [
+    {
+      "url": "https://tools.ptrmc.net",
+      "description": "Production"
+    }
+  ],
+  "tags": []
+}
