@@ -25,7 +25,6 @@ jobs:
           chmod +x ./build
           chmod +x ./scripts/*
           echo "Running build tool to apply patches"
-          ./build u
           ./build p
 
       - name: Log in to Docker Hub
