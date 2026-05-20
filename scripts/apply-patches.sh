@@ -45,7 +45,7 @@ for module in "${SUBMODULES[@]}"; do
 
     PATCHES=($(find "$PATCH_DIR" -maxdepth 1 -name "*.patch" | sort))
 
-    if git am -3 "${PATCHES[@]}" >/dev/null; then
+    if git am  "${PATCHES[@]}" >/dev/null; then
 
       echo "Patches applied successfully."
 
