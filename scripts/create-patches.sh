@@ -4,6 +4,9 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+PATCHED_BRANCH="patched"
+BASE_BRANCH="master"
+
 SUBMODULES=(
   "gitrss"
   "package-json-analyzer"
@@ -11,8 +14,8 @@ SUBMODULES=(
 )
 
 echo "Creating patches for all submodules..."
-
-./scripts/apply-patches.sh >/dev/null
+echo "Patched branch: $PATCHED_BRANCH"
+echo "Base branch: $BASE_BRANCH"
 
 for module in "${SUBMODULES[@]}"; do
 
@@ -26,20 +29,18 @@ for module in "${SUBMODULES[@]}"; do
 
   cd "$MODULE_DIR"
 
-  echo "Cleaning old patches..."
-  rm -f "$PATCH_DIR"/*.patch
-
   echo "Fetching origin..."
   git fetch origin >/dev/null
 
-  CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+  echo "Checking out patched branch..."
+  git checkout "$PATCHED_BRANCH" >/dev/null 2>&1
 
-  echo "Current branch: $CURRENT_BRANCH"
+  echo "Cleaning old patches..."
+  rm -f "$PATCH_DIR"/*.patch
 
   echo "Creating patch files..."
 
-  # create patches for commits ahead of origin
-  git format-patch "origin/$CURRENT_BRANCH" \
+  git format-patch "origin/$BASE_BRANCH" \
     --output-directory "$PATCH_DIR" >/dev/null
 
   PATCH_COUNT=$(find "$PATCH_DIR" -name "*.patch" | wc -l)
@@ -51,14 +52,7 @@ for module in "${SUBMODULES[@]}"; do
 
   echo "Created $PATCH_COUNT patch(es)."
 
-  echo "Removing local commits..."
-
-  # hard reset branch back to upstream
-  git reset --hard "origin/$CURRENT_BRANCH" >/dev/null
-
-  echo "Submodule reset clean."
-
 done
 
 echo ""
-echo "Created all patches"
+echo "Created all patches successfully"

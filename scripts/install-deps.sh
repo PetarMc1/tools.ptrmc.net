@@ -10,24 +10,39 @@ SUBMODULES=(
   "openapi-merger"
 )
 
-echo "Installing dependencies for frontend"
-pnpm install --dir frontend --reporter=silent --config.confirmModulesPurge=false > /dev/null
-echo "Finished installing dependencies for frontend"
-echo ""
+install_if_exists() {
+  local dir="$1"
+
+  if [ -d "$dir" ]; then
+    echo "Installing dependencies in: $dir"
+
+    pnpm install \
+      --dir "$dir" \
+      --reporter=silent \
+      --config.confirmModulesPurge=false \
+      >/dev/null
+
+    echo "Finished: $dir"
+    echo ""
+  fi
+}
+
+echo "Installing dependencies for root frontend"
+install_if_exists "$ROOT_DIR/frontend"
 
 for module in "${SUBMODULES[@]}"; do
-    echo "Installing dependencies for $module..."
 
-    MODULE_DIR="$ROOT_DIR/$module"
+  echo "Processing module: $module"
 
-    cd "$MODULE_DIR"
-    pnpm install --dir frontend > /dev/null
-    pnpm install --dir backend > /dev/null
+  MODULE_DIR="$ROOT_DIR/$module"
 
-    if [$module == "openapi-merger"]; then
-        pnpm install --dir shared > /dev/null
-    fi
+  install_if_exists "$MODULE_DIR/frontend"
+  install_if_exists "$MODULE_DIR/backend"
 
-    echo "Finished installing dependencies for $module"
-    echo ""
+  if [ "$module" = "openapi-merger" ]; then
+    install_if_exists "$MODULE_DIR/shared"
+  fi
+
 done
+
+echo "All dependencies installed successfully"

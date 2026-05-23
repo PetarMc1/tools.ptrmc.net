@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+TARGET_BRANCH="patched"
 
 SUBMODULES=(
     "gitrss"
@@ -9,7 +12,10 @@ SUBMODULES=(
     "openapi-merger"
 )
 
+./scripts/reset-submodules.sh
+
 echo "Applying patches for all submodules..."
+echo "Target branch: $TARGET_BRANCH"
 
 for module in "${SUBMODULES[@]}"; do
 
@@ -21,7 +27,15 @@ for module in "${SUBMODULES[@]}"; do
 
   cd "$MODULE_DIR"
 
+  echo "Fetching latest changes..."
+  git fetch origin
 
+  echo "Checking out master..."
+  git checkout master >/dev/null 2>&1
+  git pull origin master >/dev/null 2>&1
+
+  echo "Creating/resetting branch: $TARGET_BRANCH"
+  git checkout -B "$TARGET_BRANCH" >/dev/null 2>&1
 
   if [ -d ".git/rebase-apply" ] || [ -d ".git/rebase-merge" ]; then
     echo "Found interrupted git am/rebase state"
@@ -38,14 +52,15 @@ for module in "${SUBMODULES[@]}"; do
     rm -rf "$GIT_DIR/rebase-merge"
   fi
 
-
-  if ls "$PATCH_DIR"/*.patch >/dev/null; then
+  if ls "$PATCH_DIR"/*.patch >/dev/null 2>&1; then
 
     echo "Applying patches..."
 
-    PATCHES=($(find "$PATCH_DIR" -maxdepth 1 -name "*.patch" | sort))
+    mapfile -t PATCHES < <(
+      find "$PATCH_DIR" -maxdepth 1 -name "*.patch" | sort
+    )
 
-    if git am  "${PATCHES[@]}" >/dev/null; then
+    if git am "${PATCHES[@]}" >/dev/null 2>&1; then
 
       echo "Patches applied successfully."
 
@@ -57,7 +72,7 @@ for module in "${SUBMODULES[@]}"; do
 
       echo "Aborting failed apply..."
 
-      git am --abort >/dev/null || true
+      git am --abort >/dev/null 2>&1 || true
 
       exit 1
     fi
@@ -68,4 +83,4 @@ for module in "${SUBMODULES[@]}"; do
 done
 
 echo ""
-echo "All patches applied successfully"
+echo "All patches applied successfully on branch: $TARGET_BRANCH"
